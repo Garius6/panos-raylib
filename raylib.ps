@@ -1,0 +1,108 @@
+// raylib для panos поверх динамического FFI (`внешний`/`ff_структура`)
+// — обычная panos-библиотека, никакого host-кода на стороне panos core.
+//
+// Путь к библиотеке ЗАХАРДКОЖЕН на macOS/Apple Silicon + `brew install
+// raylib` (`/opt/homebrew/opt/raylib/lib/libraylib.dylib`) — честно
+// задокументированный, не скрытый пробел (см. README.md, "Известные
+// ограничения"). Голое имя `"libraylib"` НЕ работает — raylib не лежит
+// на стандартных путях поиска dyld/ld.so, в отличие от libc — нужен
+// полный путь.
+//
+// C bool (WindowShouldClose/IsKeyDown) маршаллится как Целое(8) (тот же
+// байтовый размер на этой платформе) — обёрточные функции ниже
+// конвертируют 0/1 в настоящий Булево, чтобы panos-сторона не знала о
+// деталях C ABI.
+
+экспорт тип Vector2 = ff_структура
+    x: Число(32)
+    y: Число(32)
+конец
+
+экспорт тип Color = ff_структура
+    r: Целое(8)
+    g: Целое(8)
+    b: Целое(8)
+    a: Целое(8)
+конец
+
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ InitWindow(ширина: Целое(32), высота: Целое(32), заголовок: КСтрока) -> Пусто
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ WindowShouldClose() -> Целое(8)
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ CloseWindow() -> Пусто
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ BeginDrawing() -> Пусто
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ EndDrawing() -> Пусто
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ ClearBackground(цвет: Color) -> Пусто
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ DrawRectangleV(позиция: Vector2, размер: Vector2, цвет: Color) -> Пусто
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ DrawCircleV(центр: Vector2, радиус: Число(32), цвет: Color) -> Пусто
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ IsKeyDown(клавиша: Целое(32)) -> Целое(8)
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ GetFrameTime() -> Число(32)
+внешний "/opt/homebrew/opt/raylib/lib/libraylib.dylib" функ SetTargetFPS(fps: Целое(32)) -> Пусто
+
+экспорт функ инициализировать_окно(ширина: Целое, высота: Целое, заголовок: Строка) -> Пусто
+    InitWindow(ширина, высота, заголовок)
+конец
+
+экспорт функ окно_должно_закрыться() -> Булево
+    WindowShouldClose() <> 0
+конец
+
+экспорт функ закрыть_окно() -> Пусто
+    CloseWindow()
+конец
+
+экспорт функ начать_рисование() -> Пусто
+    BeginDrawing()
+конец
+
+экспорт функ закончить_рисование() -> Пусто
+    EndDrawing()
+конец
+
+экспорт функ очистить_фон(цвет: Color) -> Пусто
+    ClearBackground(цвет)
+конец
+
+экспорт функ нарисовать_прямоугольник(позиция: Vector2, размер: Vector2, цвет: Color) -> Пусто
+    DrawRectangleV(позиция, размер, цвет)
+конец
+
+экспорт функ нарисовать_круг(центр: Vector2, радиус: Число, цвет: Color) -> Пусто
+    DrawCircleV(центр, радиус, цвет)
+конец
+
+экспорт функ клавиша_нажата(клавиша: Целое) -> Булево
+    IsKeyDown(клавиша) <> 0
+конец
+
+экспорт функ время_кадра() -> Число
+    GetFrameTime()
+конец
+
+экспорт функ задать_fps(fps: Целое) -> Пусто
+    SetTargetFPS(fps)
+конец
+
+// Коды клавиш raylib (KeyboardKey enum) — те же значения, что были в
+// прежнем графика-модуле.
+экспорт функ клавиша_вверх() -> Целое
+    265
+конец
+
+экспорт функ клавиша_вниз() -> Целое
+    264
+конец
+
+экспорт функ клавиша_влево() -> Целое
+    263
+конец
+
+экспорт функ клавиша_вправо() -> Целое
+    262
+конец
+
+экспорт функ клавиша_пробел() -> Целое
+    32
+конец
+
+экспорт функ клавиша_escape() -> Целое
+    256
+конец
